@@ -1,13 +1,16 @@
 # PolyLingo Voice Studio
 
-An advanced multilingual **Text -> Translate -> Speech** app.
+An advanced multilingual **Speech/Text -> Translate -> Speech** app built with Streamlit.
 
 ## What it does
 
+- Supports two workflows with a mode toggle:
+  - Speech to Text
+  - Text to Speech
 - Accepts text in almost any language.
-- Converts recorded speech to text.
+- Converts recorded or uploaded audio to text.
 - Supports source language auto-detection.
-- Translates to one or many target languages at once.
+- Translates from one source language to one or many target languages.
 - Generates speech (MP3) for each translated result.
 - Lets you play and download audio per language.
 
@@ -34,8 +37,29 @@ C:/Users/BAISAMPAYAN/AppData/Local/Programs/Python/Python311/python.exe -m strea
 
 Then open the local URL shown by Streamlit.
 
+## How to use
+
+1. Choose a workflow mode at the top:
+   - `Speech to Text` for transcription.
+   - `Text to Speech` for translation + audio generation.
+2. Select source language (or use `Auto Detect`).
+3. Select one or more target languages.
+4. For Speech to Text mode:
+   - Record audio using the microphone input, or upload a supported audio file.
+   - Click `Transcribe Audio`.
+   - The transcribed text is saved and can be reused in Text to Speech mode.
+5. For Text to Speech mode:
+   - Enter text (or use transcribed text from STT mode).
+   - Click `Translate + Generate Speech`.
+   - Play or download each generated MP3.
+
+## Audio input support
+
+- Microphone recording via Streamlit audio input.
+- Upload formats: WAV, FLAC, AIFF/AIF/AIFC.
+
 ## Notes
 
-- Internet access is required for translation and speech generation.
+- Internet access is required for translation, speech recognition, and speech generation.
 - Speech recognition uses an online recognizer.
 - If a language has no exact matching voice, the app falls back to a multilingual English neural voice.

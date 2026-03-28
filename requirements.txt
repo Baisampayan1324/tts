@@ -1,0 +1,5 @@
+streamlit>=1.44.0
+deep-translator>=1.11.4
+edge-tts>=6.1.12
+langcodes>=3.4.0
+SpeechRecognition>=3.10.4

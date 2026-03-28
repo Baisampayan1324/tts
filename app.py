@@ -1,7 +1,7 @@
 import asyncio
 import importlib
 from io import BytesIO
-from typing import Any, Dict, List, Tuple
+from typing import Dict, List, Tuple
 
 import edge_tts
 import streamlit as st
@@ -103,6 +103,30 @@ def transcribe_audio(audio_bytes: bytes, locale: str) -> str:
     if not callable(recognize_google):
         raise RuntimeError("SpeechRecognition recognizer is missing recognize_google")
     return str(recognize_google(audio_data, language=locale))
+
+
+def normalize_audio_for_transcription(audio_bytes: bytes, extension: str) -> bytes:
+    """Return bytes in a SpeechRecognition-compatible format (wav/flac/aiff)."""
+    ext = extension.lower().lstrip(".")
+
+    # SpeechRecognition.AudioFile supports wav, flac, and aiff directly.
+    if ext in {"wav", "flac", "aiff", "aif", "aifc"}:
+        return audio_bytes
+
+    # Convert compressed/container formats via pydub + ffmpeg.
+    pydub_module = importlib.import_module("pydub")
+    audio_segment_cls = getattr(pydub_module, "AudioSegment", None)
+    if audio_segment_cls is None:
+        raise RuntimeError("pydub AudioSegment is unavailable")
+
+    source = BytesIO(audio_bytes)
+    if ext in {"mpg", "mpeg"}:
+        ext = "mp3"
+
+    audio_segment = audio_segment_cls.from_file(source, format=ext)
+    out = BytesIO()
+    audio_segment.export(out, format="wav")
+    return out.getvalue()
 
 
 def translate_text(text: str, source: str, target: str) -> str:
@@ -232,26 +256,35 @@ if mode == "Speech to Text":
     with right:
         uploaded_audio = st.file_uploader(
             "Or upload audio file",
-            type=["wav", "flac", "aiff", "aif", "aifc"],
+            type=["wav", "flac", "aiff", "aif", "aifc", "mp3", "mp4"],
         )
 
     if st.button("Transcribe Audio", type="primary"):
         audio_bytes: bytes | None = None
+        audio_extension = "wav"
         if recorded_audio is not None:
             audio_bytes = recorded_audio.getvalue()
+            audio_extension = "wav"
         elif uploaded_audio is not None:
             audio_bytes = uploaded_audio.read()
+            name_parts = uploaded_audio.name.rsplit(".", 1)
+            if len(name_parts) == 2:
+                audio_extension = name_parts[1].lower()
 
         if audio_bytes is None:
             st.error("Record or upload audio first.")
         else:
             try:
                 locale = speech_locale_hint(source_language_name, language_map)
-                st.session_state.stt_text = transcribe_audio(audio_bytes, locale)
+                normalized_audio = normalize_audio_for_transcription(audio_bytes, audio_extension)
+                st.session_state.stt_text = transcribe_audio(normalized_audio, locale)
                 st.session_state.input_text = st.session_state.stt_text
                 st.success("Speech converted to text.")
             except ModuleNotFoundError:
-                st.error("SpeechRecognition is not installed. Run: pip install -r requirements.txt")
+                st.error(
+                    "Missing dependency. Run: pip install -r requirements.txt. "
+                    "For MP3/MP4/MPEG, also install FFmpeg and add it to PATH."
+                )
             except Exception as exc:
                 error_name = type(exc).__name__
                 if error_name == "UnknownValueError":
@@ -259,7 +292,10 @@ if mode == "Speech to Text":
                 elif error_name == "RequestError":
                     st.error(f"Speech recognition service error: {exc}")
                 else:
-                    st.error(f"Audio transcription failed: {exc}")
+                    st.error(
+                        f"Audio transcription failed: {exc}. "
+                        "If this is MP3/MP4/MPEG, install FFmpeg and ensure it is available in PATH."
+                    )
 
     st.text_area(
         "Transcribed Text",

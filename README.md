@@ -56,7 +56,13 @@ Then open the local URL shown by Streamlit.
 ## Audio input support
 
 - Microphone recording via Streamlit audio input.
-- Upload formats: WAV, FLAC, AIFF/AIF/AIFC.
+- Upload formats: WAV, FLAC, AIFF/AIF/AIFC, MP3, MP4, MPEG.
+
+## FFmpeg requirement for MP3/MP4/MPEG
+
+- WAV/FLAC/AIFF uploads work directly with SpeechRecognition.
+- MP3/MP4/MPEG are converted to WAV before transcription.
+- For this conversion, FFmpeg must be installed and available in your system PATH.
 
 ## Notes
 

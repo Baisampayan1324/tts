@@ -23,16 +23,14 @@ An advanced multilingual **Speech/Text -> Translate -> Speech** app built with S
 
 ## Setup
 
-```powershell
-cd p:\tts
-C:/Users/BAISAMPAYAN/AppData/Local/Programs/Python/Python311/python.exe -m pip install -r requirements.txt
+```
+pip install -r requirements.txt
 ```
 
 ## Run
 
-```powershell
-cd p:\tts
-C:/Users/BAISAMPAYAN/AppData/Local/Programs/Python/Python311/python.exe -m streamlit run app.py
+```
+streamlit run app.py
 ```
 
 Then open the local URL shown by Streamlit.
